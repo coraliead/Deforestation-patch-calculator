@@ -1,0 +1,143 @@
+# This program uses user input to choose the area to look at. It then converts
+# these coordinates and uses this to download a lossyear dataset from Global 
+# Forest Change.
+# It then runs a python script to process the data and convert it from 
+# geotiff to netcdf.
+# It then runs another python script which uses an algorithm to assess the 
+# average size of the patches in the area 
+# It can then compare this deforestation statistic to the same statistic in
+# other areas
+# During all python tasks it displays the percentage complete of the task 
+
+echo -n "Please enter the latitude (in decimal degrees) "
+read lat
+# need to ensure that program gets correct input. lat must be a double and must be between -90 and +90
+
+echo -n "Please enter the longitude (in decimal degrees) "
+read lon
+# lon should be a double and must be between -180 and 180
+
+# convert decimal degrees to 40E 010N system. so extract the digits before . or if no . extract all 
+# extracting the digits before a "."
+
+# if [[ $lat == "-"* ]]; then
+  # $lat= # remove negative number 
+  # negative_flag="yes"
+
+if [[ $lat == *"."* ]]; then
+   if [[ $lat == "-"* ]]; then
+      lat_rounded=$( echo "$lat" | awk '{print int($1-0.5)}')
+   else
+      lat_rounded=$( echo "$lat" | awk '{print int($1+0.5)}')
+   fi
+else
+   lat_rounded=$lat
+fi 
+
+if [[ $lon == *"."* ]]; then 
+   if [[ $lon == "-"* ]]; then
+      lon_rounded=$( echo "$lon" |  awk '{print int($1-0.5)}')
+   else
+      lon_rounded=$( echo "$lon" |  awk '{print int($1+0.5)}')
+   fi    
+else
+   lon_rounded=$lon
+fi
+
+# assess which continent its in 
+# continent constraints. format = continent latmin latmax lonmin lonmax)
+continents_list=(Africa -36 35 -20 53 South_America -60 11 -83 -30 North_America 11 74 -158 -68 Australia -44 -1 113 154)
+continent_of_point=Other
+for i in 0 5 10 15
+do
+   if (($lat_rounded >= ${continents_list[i+1]}  && $lat_rounded < ${continents_list[i+2]} )); then
+      if (($lon_rounded >= ${continents_list[i+3]}  && $lon_rounded < ${continents_list[i+4]} )); then      
+         continent_of_point=${continents_list[i]}
+      fi
+
+   fi
+done
+   
+# need to match the degrees to the filename to download
+lat_matched="no"
+for lower_range in {-90..80..10}
+   do
+      upper_range=$((lower_range + 10))
+      if (($lat_rounded >= lower_range && $lat_rounded < $upper_range)); then
+         lat_matched="yes"
+         break
+      fi
+   done
+
+if [[ $lat_matched == "no" ]]; then
+   echo "Latitude out of range, please retry"
+else
+
+# ensuring that the lat ref is in correct format (e.g. correcting 0 to 00)
+   lat_count=$( echo -n "$upper_range" | wc -c)   
+   if [[ $lat_count == 1 ]]; then
+      lat_ref="0$upper_range"
+   else 
+      lat_ref=$upper_range
+   fi
+
+# further formatting - changing 10 to 10N and -20 to 20S 
+   if [[ $lat_ref == "-"* ]]; then
+      lat_ref_cut=$(cut -d "-" -f2- <<< "$lat_ref")
+      lat_ref_fin="${lat_ref_cut}S"
+   else
+      lat_ref_fin="${lat_ref}N"
+   fi
+fi
+
+lon_matched="no"
+# longitude
+for lower_range in {-180..170..10}
+   do
+      upper_range=$((lower_range + 10))
+      if (($lon_rounded >= lower_range && $lon_rounded < $upper_range)); then
+         lon_matched="yes"
+         break
+      fi
+   done
+
+if [[ $lon_matched == "no" ]]; then
+   echo "Longitude out of range, please retry"
+else
+   # ensuring that the lon ref is in correct format (e.g. correcting 0 to 000)
+   lon_count=$( echo -n "$upper_range" | wc -c)
+   if [[ $lon_count == 1 ]]; then
+      lon_ref="00$upper_range"
+   elif [[ $lon_count == 2 ]]; then
+      lon_ref="0$upper_range"
+   else
+      lon_ref=$upper_range
+   fi
+
+   # further formatting - changing 10 to 10E and -20 to 20W
+   if [[ $lon_ref == "-"* ]]; then
+      lon_ref_cut=$(cut -d "-" -f2- <<< "$lon_ref")
+      lon_ref_fin="${lon_ref_cut}W"
+   else
+      lon_ref_fin="${lon_ref}E"
+   fi
+fi
+
+if [[ $lat_matched == "no" ]] || [[ $lon_matched == "no" ]]; then
+   tile_download="no"
+else
+   echo "Tile selected: latitude" $lat_ref_fin "and longitude" $lon_ref_fin
+   echo "Confirm download of tile? (yes/no)"
+   read tile_download
+fi 
+
+if [[ $tile_download == "yes" ]]; then 
+   if [[ -d "$continent_list" ]]; then
+      cd $continent_of_point
+      wget "https://storage.googleapis.com/earthenginepartners-hansen/GFC-2019-v1.7/Hansen_GFC-2019-v1.7_lossyear_"$lat_ref_fin"_"$lon_ref_fin".tif"
+   else
+      mkdir $continent_of_point
+      wget "https://storage.googleapis.com/earthenginepartners-hansen/GFC-2019-v1.7/Hansen_GFC-2019-v1.7_lossyear_"$lat_ref_fin"_"$lon_ref_fin".tif"
+   fi
+fi
+echo "Download complete, saved to" $(pwd)"/"$continent_of_point
