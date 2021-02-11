@@ -17,13 +17,8 @@ echo -n "Please enter the longitude (in decimal degrees) "
 read lon
 # lon should be a double and must be between -180 and 180
 
-# convert decimal degrees to 40E 010N system. so extract the digits before . or if no . extract all 
-# extracting the digits before a "."
-
-# if [[ $lat == "-"* ]]; then
-  # $lat= # remove negative number 
-  # negative_flag="yes"
-
+# convert decimal degrees to 40E 010N system. 
+# checking if a decimal number was input, if so rounding the number to an integer 
 if [[ $lat == *"."* ]]; then
    if [[ $lat == "-"* ]]; then
       lat_rounded=$( echo "$lat" | awk '{print int($1-0.5)}')
@@ -33,7 +28,7 @@ if [[ $lat == *"."* ]]; then
 else
    lat_rounded=$lat
 fi 
-
+# repeating decimal number checks for longitude
 if [[ $lon == *"."* ]]; then 
    if [[ $lon == "-"* ]]; then
       lon_rounded=$( echo "$lon" |  awk '{print int($1-0.5)}')
@@ -44,8 +39,10 @@ else
    lon_rounded=$lon
 fi
 
-# assess which continent its in 
-# continent constraints. format = continent latmin latmax lonmin lonmax)
+# assess which continent the point is in. this section is a bit rough, improvements are 
+# needed for better assessment of which continent
+
+# continent_list format = continent latmin latmax lonmin lonmax)
 continents_list=(Africa -36 35 -20 53 South_America -60 11 -83 -30 North_America 11 74 -158 -68 Australia -44 -1 113 154)
 continent_of_point=Other
 for i in 0 5 10 15
@@ -54,11 +51,10 @@ do
       if (($lon_rounded >= ${continents_list[i+3]}  && $lon_rounded < ${continents_list[i+4]} )); then      
          continent_of_point=${continents_list[i]}
       fi
-
    fi
 done
    
-# need to match the degrees to the filename to download
+# checking latitude is within the correct boundaries
 lat_matched="no"
 for lower_range in {-90..80..10}
    do
@@ -91,7 +87,7 @@ else
 fi
 
 lon_matched="no"
-# longitude
+# checking longitude is within the correct boundaries
 for lower_range in {-180..170..10}
    do
       upper_range=$((lower_range + 10))
@@ -123,6 +119,8 @@ else
    fi
 fi
 
+# if either lat or lon values were out of boundary then this program goes no further
+# if both are within the boundaries, check with user before download
 if [[ $lat_matched == "no" ]] || [[ $lon_matched == "no" ]]; then
    tile_download="no"
 else
@@ -131,6 +129,9 @@ else
    read tile_download
 fi 
 
+# program checks for if a directory already exists for the point's continent, if 
+# it doesn't exist, a new directory is made. the file is downloaded into the
+# continent directory
 if [[ $tile_download == "yes" ]]; then 
    if [[ -d "$continent_list" ]]; then
       cd $continent_of_point
