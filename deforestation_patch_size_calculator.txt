@@ -133,7 +133,7 @@ fi
 # it doesn't exist, a new directory is made. the file is downloaded into the
 # continent directory
 if [[ $tile_download == "yes" ]]; then 
-   if [[ -d "$continent_list" ]]; then
+   if [[ -d "$continent_of_point" ]]; then
       cd $continent_of_point
       wget "https://storage.googleapis.com/earthenginepartners-hansen/GFC-2019-v1.7/Hansen_GFC-2019-v1.7_lossyear_"$lat_ref_fin"_"$lon_ref_fin".tif"
    else
