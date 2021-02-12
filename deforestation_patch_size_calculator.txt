@@ -56,10 +56,10 @@ done
    
 # checking latitude is within the correct boundaries
 lat_matched="no"
-for lower_range in {-90..80..10}
+for lower_range_lat in {-60..70..10}
    do
-      upper_range=$((lower_range + 10))
-      if (($lat_rounded >= lower_range && $lat_rounded < $upper_range)); then
+      upper_range_lat=$((lower_range_lat + 10))
+      if (($lat_rounded >= lower_range_lat && $lat_rounded < $upper_range_lat)); then
          lat_matched="yes"
          break
       fi
@@ -70,11 +70,11 @@ if [[ $lat_matched == "no" ]]; then
 else
 
 # ensuring that the lat ref is in correct format (e.g. correcting 0 to 00)
-   lat_count=$( echo -n "$upper_range" | wc -c)   
+   lat_count=$( echo -n "$upper_range_lat" | wc -c)   
    if [[ $lat_count == 1 ]]; then
-      lat_ref="0$upper_range"
+      lat_ref="0$upper_range_lat"
    else 
-      lat_ref=$upper_range
+      lat_ref=$upper_range_lat
    fi
 
 # further formatting - changing 10 to 10N and -20 to 20S 
@@ -88,10 +88,10 @@ fi
 
 lon_matched="no"
 # checking longitude is within the correct boundaries
-for lower_range in {-180..170..10}
+for lower_range_lon in {-180..170..10}
    do
-      upper_range=$((lower_range + 10))
-      if (($lon_rounded >= lower_range && $lon_rounded < $upper_range)); then
+      upper_range_lon=$((lower_range_lon + 10))
+      if (($lon_rounded >= lower_range_lon && $lon_rounded < $upper_range_lon)); then
          lon_matched="yes"
          break
       fi
@@ -101,13 +101,13 @@ if [[ $lon_matched == "no" ]]; then
    echo "Longitude out of range, please retry"
 else
    # ensuring that the lon ref is in correct format (e.g. correcting 0 to 000)
-   lon_count=$( echo -n "$upper_range" | wc -c)
+   lon_count=$( echo -n "$lower_range_lon" | wc -c)
    if [[ $lon_count == 1 ]]; then
-      lon_ref="00$upper_range"
+      lon_ref="00$lower_range_lon"
    elif [[ $lon_count == 2 ]]; then
-      lon_ref="0$upper_range"
+      lon_ref="0$lower_range_lon"
    else
-      lon_ref=$upper_range
+      lon_ref=$lower_range_lon
    fi
 
    # further formatting - changing 10 to 10E and -20 to 20W
@@ -140,5 +140,5 @@ if [[ $tile_download == "yes" ]]; then
       mkdir $continent_of_point
       wget "https://storage.googleapis.com/earthenginepartners-hansen/GFC-2019-v1.7/Hansen_GFC-2019-v1.7_lossyear_"$lat_ref_fin"_"$lon_ref_fin".tif"
    fi
+   echo "Download complete, saved to" $(pwd)"/"$continent_of_point
 fi
-echo "Download complete, saved to" $(pwd)"/"$continent_of_point
