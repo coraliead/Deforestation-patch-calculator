@@ -142,3 +142,23 @@ if [[ $tile_download == "yes" ]]; then
    fi
    echo "Download complete, saved to" $(pwd)"/"$continent_of_point
 fi
+
+source activate TEST
+cd ..
+filepath=$(pwd)
+filename="Hansen_GFC-2019-v1.7_lossyear_"$lat_ref_fin"_"$lon_ref_fin".tif"
+cd $continent_of_point
+
+echo $filepath"/process_yearloss_data.py"
+echo $filepath"/"$continent_of_point"/"
+
+python $filepath"/process_yearloss_data.py" $filepath"/"$continent_of_point"/" $filename $lat $lon
+
+# need to retrieve the created filename for the forest_loss_constrained data set generated in the 
+# python script].
+
+# then, run the path_algorithm script which needs filepath, filename and deforestation year as inputs
+python $filepath"/patch_algorithm.py" $filepath"/"$continent_of_point"/" 
+
+# then i want to make an output from python which bash can use to display statistics. e.g. what are the 
+# mean patch sizes in Africa? 
