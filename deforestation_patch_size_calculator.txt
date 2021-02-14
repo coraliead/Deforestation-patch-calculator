@@ -163,7 +163,7 @@ if [[ $tile_download == "yes" ]]; then
 # python script].
 
 # then, run the path_algorithm script which needs filepath, filename and deforestation year as inputs
-      python $filepath"/patch_algorithm.py" $filepath"/"$continent_of_point"/" 
+#      python $filepath"/patch_algorithm.py" $filepath"/"$continent_of_point"/" 
    fi
 # then i want to make an output from python which bash can use to display statistics. e.g. what are the 
 # mean patch sizes in Africa? 
