@@ -139,26 +139,32 @@ if [[ $tile_download == "yes" ]]; then
    else
       mkdir $continent_of_point
       wget "https://storage.googleapis.com/earthenginepartners-hansen/GFC-2019-v1.7/Hansen_GFC-2019-v1.7_lossyear_"$lat_ref_fin"_"$lon_ref_fin".tif"
+      cd $continent_of_point
    fi
-   echo "Download complete, saved to" $(pwd)"/"$continent_of_point
-fi
+   echo "Download complete, saved to" $(pwd)
+   
+   echo "Would you like to process this data and run the deforestation patch size algorithm? (yes/no)"
+   read process_algorithm
+   if [[ $process_algorithm == "yes" ]]; then
+ 
+      source activate TEST
+      cd ..
+      filepath=$(pwd)
+      filename="Hansen_GFC-2019-v1.7_lossyear_"$lat_ref_fin"_"$lon_ref_fin".tif"
+      cd $continent_of_point
 
-source activate TEST
-cd ..
-filepath=$(pwd)
-filename="Hansen_GFC-2019-v1.7_lossyear_"$lat_ref_fin"_"$lon_ref_fin".tif"
-cd $continent_of_point
+#      echo $filepath"/process_yearloss_data.py"
+#      echo $filepath"/"$continent_of_point"/"
+      echo $filename
 
-echo $filepath"/process_yearloss_data.py"
-echo $filepath"/"$continent_of_point"/"
-
-python $filepath"/process_yearloss_data.py" $filepath"/"$continent_of_point"/" $filename $lat $lon
+      python $filepath"/process_yearloss_data.py" $filepath"/"$continent_of_point"/" $filename $lat $lon
 
 # need to retrieve the created filename for the forest_loss_constrained data set generated in the 
 # python script].
 
 # then, run the path_algorithm script which needs filepath, filename and deforestation year as inputs
-python $filepath"/patch_algorithm.py" $filepath"/"$continent_of_point"/" 
-
+      python $filepath"/patch_algorithm.py" $filepath"/"$continent_of_point"/" 
+   fi
 # then i want to make an output from python which bash can use to display statistics. e.g. what are the 
 # mean patch sizes in Africa? 
+fi 
