@@ -75,10 +75,6 @@ lat, lon = float(sys.argv[3]), float(sys.argv[4])
 # filepath = '/home/coralie/bash_project/Africa/'
 # filename = 'Hansen_GFC-2019-v1.7_lossyear_10N_000E.tif'
 # lat, lon = 6, 6
-
-print(lat)
-print(type(lat))
-
 latmin, latmax, lonmin, lonmax = lat - 0.5, lat + 0.5, lon - 0.5, lon + 0.5
 
 StandardNomenclature = str(lonmin) + '-' + str(lonmax) + ' lat' + str(latmin) + '-' + str(latmax)
